@@ -1,12 +1,12 @@
 #include <FastLED.h>
 
-#define LED_PIN 6
+#define LED_PIN 9
 
-#define NUM_LEDS 36
+#define NUM_LEDS 53
 
 unsigned long lastStateChange;
 
-CRGB colour = (255, 0, 0);
+CRGB colour = CRGB(255, 0, 0);
 
 CRGB leds[NUM_LEDS];
 
@@ -25,21 +25,22 @@ struct Sensor {
 
 const int sensorAmount = 2;
 Sensor sensors[sensorAmount] = {
-  {9,10,{0,1}},
-  {7,8,{2,3}}
+  {1,2,{0,1}},
+  {4,5,{2,3}}
 };
 
-const int segmentAmount = 2;
+const int segmentAmount = 3;
 Segment segments[segmentAmount] = {
   {0, 17, 0, false},
-  {18, 35, 0, false}
+  {18, 35, 0, false},
+  {36, 52, 0, false}
 };
 
 long getDistance(int trigPin, int echoPin){
 
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
-
+  
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
 
@@ -53,7 +54,7 @@ long getDistance(int trigPin, int echoPin){
   return duration * 0.0343 / 2;
 }
 
-void fillSegment(Segment segment, CRGB colour) {
+void fillSegment(Segment segment) {
     for (int i = segment.start; i <= segment.end; i++) {
         leds[i] = colour;
         leds[i].nscale8(segment.brightness);
@@ -61,18 +62,21 @@ void fillSegment(Segment segment, CRGB colour) {
 }
 
 void changeStates(){
-  if(millis() - 30 < lastStateChange){
-    return;
-  }
+  
+  //if(millis() - 30 < lastStateChange){
+    //return;
+  //}
 
   for(int i = 0; i<segmentAmount; i++){
     if(segments[i].state && segments[i].brightness < 255){
-      segments[i].brightness + 5;
-      fillSegment(segments[i], colour);
+      segments[i].brightness += 5;
+      fillSegment(segments[i]);
+      FastLED.show();
     }
     if(!segments[i].state && segments[i].brightness > 0){
-      segments[i].brightness - 5;
-      fillSegment(segments[i], colour);
+      segments[i].brightness -= 5;
+      fillSegment(segments[i]);
+      FastLED.show();
     }
   }
   lastStateChange = millis();
@@ -97,8 +101,12 @@ void loop() {
   changeStates();
 
   for(int i = 0; i<sensorAmount; i++){
-    if (getDistance(sensors[i].trig, sensors[i].echo) < 20){
+    long distance = getDistance(sensors[i].trig, sensors[i].echo);
+    if (distance < 20){
         segments[i].state = true;
+        Serial.println(distance);
+    } else {
+      segments[i].state = false;
     }
   }
 
