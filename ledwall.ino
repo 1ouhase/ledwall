@@ -83,7 +83,7 @@ Sensor sensors[NUM_SENSORS] = {
 
 // --- non-blocking timing state ---
 unsigned long lastSensorRead = 0;
-const unsigned long sensorInterval = 50; // ms between sensor reads (crosstalk spacing)
+const unsigned long sensorInterval = 20; // ms between sensor reads (crosstalk spacing)
 int currentSensor = 0;
 
 unsigned long lastFadeUpdate = 0;
